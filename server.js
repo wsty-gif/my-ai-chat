@@ -1,37 +1,47 @@
-﻿  import express from 'express';
-  import fetch from 'node-fetch';
+﻿import express from 'express';
+import fetch from 'node-fetch';  // Node 18+ なら標準 fetch で可
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-  const app = express();
-  const port = process.env.PORT || 3000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  app.use(express.json());
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-  app.post('/api/chat', async (req, res) => {
-    const userMessage = req.body.message;
-    const apiKey = process.env.GEMINI_API_KEY;
-    const model = 'gemini-1.5-flash';
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'web')));
 
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-          }),
-        }
-      );
+// API エンドポイント
+app.post('/api/chat', async (req, res) => {
+  const userMessage = req.body.message;
+  const apiKey = process.env.GEMINI_API_KEY;
+  const model = 'gemini-1.5-flash';
 
-      const data = await response.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '（返答なし）';
-      res.json({ reply });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'エラーが発生しました' });
-    }
-  });
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        }),
+      }
+    );
 
-  app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-  });
+    const data = await response.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '（返答なし）';
+    res.json({ reply });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Chat failed' });
+  }
+});
+
+// SPA ルーティング用
+app.get('*', (_, res) => {
+  res.sendFile(path.join(__dirname, 'web', 'chat.html'));
+});
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
