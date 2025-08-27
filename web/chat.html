@@ -1,0 +1,184 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINE風 Gemini チャット</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family:"Helvetica Neue", "Arial", sans-serif;
+    background:#e5ddd5;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+  }
+
+  header {
+    background:#075e54;
+    color:#fff;
+    text-align:center;
+    padding:16px;
+    font-size:22px;
+    font-weight:bold;
+  }
+
+  #chat {
+    flex:1;
+    overflow-y:auto;
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .message {
+    max-width:75%;
+    margin:6px 0;
+    padding:12px 18px;
+    border-radius:20px;
+    line-height:1.5;
+    word-wrap:break-word;
+    font-size:17px;
+    white-space: pre-wrap; /* 改行を保持 */
+  }
+
+  .user {
+    align-self:flex-end;
+    background:#dcf8c6;
+    border-bottom-right-radius:4px;
+  }
+
+  .bot {
+    align-self:flex-start;
+    background:#fff;
+    border-bottom-left-radius:4px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.15);
+  }
+
+  #input-area {
+    display:flex;
+    padding:12px;
+    background:#f0f0f0;
+    border-top:1px solid #ccc;
+  }
+
+  #input {
+    flex:1;
+    border:1px solid #ccc;
+    border-radius:25px;
+    padding:14px 16px;
+    font-size:18px;
+    resize:none;
+    max-height:220px;
+    overflow-y:auto;
+  }
+
+  #send {
+    margin-left:10px;
+    background:#075e54;
+    color:#fff;
+    border:none;
+    border-radius:25px;
+    padding:0 22px;
+    font-size:18px;
+    cursor:pointer;
+  }
+
+  #send:disabled {
+    opacity:0.5;
+    cursor:not-allowed;
+  }
+
+  @media (max-width:600px){
+    .message {
+      max-width:85%;
+      font-size:16px;
+      padding:12px 16px;
+    }
+    #input {
+      font-size:16px;
+      padding:12px 14px;
+    }
+    #send {
+      font-size:16px;
+      padding:0 18px;
+    }
+    header {
+      font-size:20px;
+      padding:14px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>AI チャット（LINE風）</header>
+<div id="chat"></div>
+<div id="input-area">
+  <input type="text" id="input" placeholder="メッセージを入力..." />
+  <button id="send">送信</button>
+</div>
+
+<script>
+const chatBox = document.getElementById("chat");
+const input = document.getElementById("input");
+const sendBtn = document.getElementById("send");
+
+// Markdown 記号を削除
+function sanitizeText(text) {
+  if(!text) return "";
+  return text.replace(/(\*|__|`|~~)/g,"");
+}
+
+function addMessage(text, sender){
+  const msg = document.createElement("div");
+  msg.classList.add("message", sender);
+  msg.textContent = sanitizeText(text);
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+  async function sendMessage() {
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
+
+    addMessage(userMessage, 'user');
+    input.value = '';
+    addMessage('…', 'bot');
+    const thinkingEl = chatBox.lastElementChild;
+    sendBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage }),
+      });
+      const data = await res.json();
+      const reply = data.reply || '（返答なし）';
+      thinkingEl.textContent = sanitizeText(reply);
+    } catch (e) {
+      thinkingEl.textContent = '⚠️ エラーが発生しました';
+      console.error(e);
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keydown", e=>{
+  if(e.key==="Enter"&&!e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// 初期メッセージ
+addMessage("こんにちは！ご用件を教えてください。","bot");
+</script>
+
+</body>
+</html>
