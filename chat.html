@@ -139,35 +139,34 @@ function addMessage(text, sender){
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-async function sendMessage(){
-  const userMessage = input.value.trim();
-  if(!userMessage) return;
+  async function sendMessage() {
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
 
-  addMessage(userMessage, "user");
-  input.value = "";
-  addMessage("…", "bot");
-  const thinkingEl = chatBox.lastElementChild;
-  sendBtn.disabled = true;
+    addMessage(userMessage, 'user');
+    input.value = '';
+    addMessage('…', 'bot');
+    const thinkingEl = chatBox.lastElementChild;
+    sendBtn.disabled = true;
 
-  try{
-    // 🔑 APIキーは直接使わず、サーバーの /api/chat に送る
-    const res = await fetch("/api/chat", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ message:userMessage })
-    });
-
-    const data = await res.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "（返答なし）";
-    thinkingEl.textContent = sanitizeText(reply);
-  }catch(e){
-    thinkingEl.textContent = "⚠️ エラーが発生しました";
-    console.error(e);
-  }finally{
-    sendBtn.disabled = false;
-    input.focus();
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage }),
+      });
+      const data = await res.json();
+      const reply = data.reply || '（返答なし）';
+      thinkingEl.textContent = sanitizeText(reply);
+    } catch (e) {
+      thinkingEl.textContent = '⚠️ エラーが発生しました';
+      console.error(e);
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
   }
-}
+
 
 sendBtn.addEventListener("click", sendMessage);
 input.addEventListener("keydown", e=>{
