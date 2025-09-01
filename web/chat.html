@@ -40,7 +40,7 @@
     line-height:1.5;
     word-wrap:break-word;
     font-size:17px;
-    white-space: pre-wrap; /* 改行を保持 */
+    white-space: pre-wrap;
   }
 
   .user {
@@ -91,33 +91,20 @@
   }
 
   @media (max-width:600px){
-    .message {
-      max-width:85%;
-      font-size:16px;
-      padding:12px 16px;
-    }
-    #input {
-      font-size:16px;
-      padding:12px 14px;
-    }
-    #send {
-      font-size:16px;
-      padding:0 18px;
-    }
-    header {
-      font-size:20px;
-      padding:14px;
-    }
+    .message { max-width:85%; font-size:16px; padding:12px 16px; }
+    #input { font-size:16px; padding:12px 14px; }
+    #send { font-size:16px; padding:0 18px; }
+    header { font-size:20px; padding:14px; }
   }
 </style>
 </head>
 <body>
 
-<header>JKチャット</header>
+<header>JKチャット💖</header>
 <div id="chat"></div>
 <div id="input-area">
-  <input type="text" id="input" placeholder="メッセージを入力..." />
-  <button id="send">送信</button>
+  <input type="text" id="input" placeholder="なに話す〜？" />
+  <button id="send">送信💬</button>
 </div>
 
 <script>
@@ -125,7 +112,6 @@ const chatBox = document.getElementById("chat");
 const input = document.getElementById("input");
 const sendBtn = document.getElementById("send");
 
-// Markdown 記号を削除
 function sanitizeText(text) {
   if(!text) return "";
   return text.replace(/(\*|__|`|~~)/g,"");
@@ -139,34 +125,33 @@ function addMessage(text, sender){
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-  async function sendMessage() {
-    const userMessage = input.value.trim();
-    if (!userMessage) return;
+async function sendMessage() {
+  const userMessage = input.value.trim();
+  if (!userMessage) return;
 
-    addMessage(userMessage, 'user');
-    input.value = '';
-    addMessage('…', 'bot');
-    const thinkingEl = chatBox.lastElementChild;
-    sendBtn.disabled = true;
+  addMessage(userMessage, 'user');
+  input.value = '';
+  addMessage('…', 'bot');
+  const thinkingEl = chatBox.lastElementChild;
+  sendBtn.disabled = true;
 
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage }),
-      });
-      const data = await res.json();
-      const reply = data.reply || '（返答なし）';
-      thinkingEl.textContent = sanitizeText(reply);
-    } catch (e) {
-      thinkingEl.textContent = '⚠️ エラーが発生しました';
-      console.error(e);
-    } finally {
-      sendBtn.disabled = false;
-      input.focus();
-    }
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userMessage }),
+    });
+    const data = await res.json();
+    const reply = data.reply || '（返答なし）';
+    thinkingEl.textContent = sanitizeText(reply);
+  } catch (e) {
+    thinkingEl.textContent = '⚠️ なんかエラー出ちゃった💦';
+    console.error(e);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
   }
-
+}
 
 sendBtn.addEventListener("click", sendMessage);
 input.addEventListener("keydown", e=>{
@@ -176,8 +161,8 @@ input.addEventListener("keydown", e=>{
   }
 });
 
-// 初期メッセージ
-addMessage("bbbbbbこんにちは！ご用件を教えてください。","bot");
+// 初期メッセージ（JK口調）
+addMessage("やっほ〜！💖 私とおしゃべりしよ〜なんでも話してね〜","bot");
 </script>
 
 </body>
