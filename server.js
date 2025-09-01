@@ -1,11 +1,11 @@
 ﻿// server.js
 import express from 'express';
-import fetch from 'node-fetch'; // Node 18+ は標準 fetch で可
+import fetch from 'node-fetch'; // Node 18+ なら標準 fetch で可
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-dotenv.config(); // .env を読み込む
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,53 +13,49 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// JSON のパース
 app.use(express.json());
-
-// 静的ファイル（フロント）配信
 app.use(express.static(path.join(__dirname, 'web')));
 
-// 会話履歴管理
+// 会話履歴を保持（最新10件だけ）
 let history = [];
 
 // API エンドポイント
 app.post('/api/chat', async (req, res) => {
   const userMessage = req.body.message;
   const apiKey = process.env.GEMINI_API_KEY;
+  const model = 'gemini-1.5-flash';
 
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY が設定されていません' });
   }
 
-  // ユーザー発言を履歴に追加
+  // ユーザーの発言を履歴に追加
   history.push({ role: 'user', parts: [{ text: userMessage }] });
-
-  const body = {
-    contents: history,
-    systemInstruction: `
-あなたは明るく元気な女子高生です。
-友達とLINEで雑談している口調で返してください。
-語尾に「〜だよ！」「〜だね」「〜かな？」などをよく使い、親しみやすく振る舞ってください。
-敬語は使わず、同年代の友達として会話してください。
-    `
-  };
+  if (history.length > 10) history.shift();
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          contents: history,
+          systemInstruction: `
+あなたは明るく元気な女子高生です。
+友達とLINEで雑談しているように、タメ口でフランクに話してください。
+語尾に「〜だよ！」「〜だね」「〜かな？」をよく使い、かわいらしい雰囲気を意識してください。
+          `,
+        }),
       }
     );
 
     const data = await response.json();
-
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '（返答なし）';
 
-    // AI返答を履歴に追加
+    // AIの返答を履歴に追加
     history.push({ role: 'model', parts: [{ text: reply }] });
+    if (history.length > 10) history.shift();
 
     res.json({ reply });
   } catch (err) {
@@ -68,11 +64,9 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// SPA 用ルーティング（全て chat.html に返す）
+// SPA ルーティング
 app.get('*', (_, res) => {
   res.sendFile(path.join(__dirname, 'web', 'chat.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ JKチャットが起動しました → http://localhost:${PORT}`));

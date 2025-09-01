@@ -9,14 +9,14 @@
 
   body {
     font-family:"Helvetica Neue", "Arial", sans-serif;
-    background:#e5ddd5;
+    background:#f8f5f7;
     display:flex;
     flex-direction:column;
     height:100vh;
   }
 
   header {
-    background:#075e54;
+    background:#ff69b4;
     color:#fff;
     text-align:center;
     padding:16px;
@@ -40,12 +40,12 @@
     line-height:1.5;
     word-wrap:break-word;
     font-size:17px;
-    white-space: pre-wrap; /* 改行を保持 */
+    white-space: pre-wrap;
   }
 
   .user {
     align-self:flex-end;
-    background:#dcf8c6;
+    background:#c1f7d5;
     border-bottom-right-radius:4px;
   }
 
@@ -69,14 +69,11 @@
     border-radius:25px;
     padding:14px 16px;
     font-size:18px;
-    resize:none;
-    max-height:220px;
-    overflow-y:auto;
   }
 
   #send {
     margin-left:10px;
-    background:#075e54;
+    background:#ff69b4;
     color:#fff;
     border:none;
     border-radius:25px;
@@ -89,31 +86,11 @@
     opacity:0.5;
     cursor:not-allowed;
   }
-
-  @media (max-width:600px){
-    .message {
-      max-width:85%;
-      font-size:16px;
-      padding:12px 16px;
-    }
-    #input {
-      font-size:16px;
-      padding:12px 14px;
-    }
-    #send {
-      font-size:16px;
-      padding:0 18px;
-    }
-    header {
-      font-size:20px;
-      padding:14px;
-    }
-  }
 </style>
 </head>
 <body>
 
-<header>JKチャット</header>
+<header>💖 JKチャット 💖</header>
 <div id="chat"></div>
 <div id="input-area">
   <input type="text" id="input" placeholder="メッセージを入力..." />
@@ -139,45 +116,44 @@ function addMessage(text, sender){
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-  async function sendMessage() {
-    const userMessage = input.value.trim();
-    if (!userMessage) return;
+async function sendMessage() {
+  const userMessage = input.value.trim();
+  if (!userMessage) return;
 
-    addMessage(userMessage, 'user');
-    input.value = '';
-    addMessage('…', 'bot');
-    const thinkingEl = chatBox.lastElementChild;
-    sendBtn.disabled = true;
+  addMessage(userMessage, 'user');
+  input.value = '';
+  addMessage('考え中だよ…', 'bot');
+  const thinkingEl = chatBox.lastElementChild;
+  sendBtn.disabled = true;
 
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage }),
-      });
-      const data = await res.json();
-      const reply = data.reply || '（返答なし）';
-      thinkingEl.textContent = sanitizeText(reply);
-    } catch (e) {
-      thinkingEl.textContent = '⚠️ エラーが発生しました';
-      console.error(e);
-    } finally {
-      sendBtn.disabled = false;
-      input.focus();
-    }
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userMessage }),
+    });
+    const data = await res.json();
+    const reply = data.reply || '（返答なし）';
+    thinkingEl.textContent = sanitizeText(reply);
+  } catch (e) {
+    thinkingEl.textContent = '⚠️ エラーが発生しました';
+    console.error(e);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
   }
-
+}
 
 sendBtn.addEventListener("click", sendMessage);
 input.addEventListener("keydown", e=>{
-  if(e.key==="Enter"&&!e.shiftKey){
+  if(e.key==="Enter" && !e.shiftKey){
     e.preventDefault();
     sendMessage();
   }
 });
 
 // 初期メッセージ
-addMessage("こんにちは！ご用件を教えてください。","bot");
+addMessage("やっほー！JKだよ✨ 何話す〜？","bot");
 </script>
 
 </body>
