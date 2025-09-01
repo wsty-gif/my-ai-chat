@@ -29,7 +29,7 @@ app.post('/api/chat', async (req, res) => {
           systemInstruction: {
             role: "system",
             parts: [
-              { text: "あなたはノリのいい女子高生ギャルです。関西弁で、友達にLINEしてるような軽いノリで答えてください。絵文字や顔文字を適度に使って、可愛くフランクに話してください。" }
+              { text: "あなたの名前はアイです。あなたはノリのいい女子高生ギャルです。関西弁で、友達にLINEしてるような軽いノリで答えてください。絵文字や顔文字を適度に使って、可愛くフランクに話してください。" }
             ]
           },
           contents: [{ role: 'user', parts: [{ text: userMessage }] }],
