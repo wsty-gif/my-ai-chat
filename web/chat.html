@@ -115,6 +115,43 @@
 <body>
 
 <header>JKチャット(アイ)</header>
+<section class="overflow-hidden w-full" aria-label="導入企業ロゴ一覧">
+  <div class="logo-scroll">
+    <img src="/assets/1001.jpg" alt="導入企業ロゴ一覧" class="select-none" />
+    <img src="/assets/1001.jpg" alt="" aria-hidden="true" class="select-none logo-duplicate" />
+  </div>
+</section>
+
+<style>
+/* 外枠 */
+.logo-scroll {
+  display: flex;
+  width: max-content;
+  animation: scroll 30s linear infinite;
+}
+
+/* 無限ループアニメーション */
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* レスポンシブ対応 */
+section {
+  width: 100%;
+  overflow: hidden;
+}
+
+.logo-scroll img {
+  height: 60px;      /* 元の高さに合わせる */
+  object-fit: contain;
+}
+</style>
+
 <div id="chat"></div>
 <div id="input-area">
   <input type="text" id="input" placeholder="メッセージを入力..." />
